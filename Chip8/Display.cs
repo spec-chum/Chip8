@@ -1,3 +1,5 @@
+using System;
+
 namespace Chip8
 {
     public class Display
@@ -8,12 +10,12 @@ namespace Chip8
         private const int ScreenHeight = 32;
 
         private readonly Memory ram;
-        private readonly int[] screen;
+        private readonly byte[] screen;
 
         public Display(Memory ram)
         {
             this.ram = ram;
-            screen = new int[ScreenWidth * ScreenHeight];
+            screen = new byte[ScreenWidth * ScreenHeight];
             Pixels = new byte[ScreenWidth * ScreenHeight * 4];
         }
 
@@ -49,10 +51,7 @@ namespace Chip8
 
         public void Clear()
         {
-            for (int i = 0; i < 64 * 32; i++)
-            {
-                screen[i] = 0;
-            }
+            Array.Clear(screen, 0, 2048);
         }
 
         public void UpdatePixels()

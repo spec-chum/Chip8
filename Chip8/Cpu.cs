@@ -6,35 +6,22 @@ namespace Chip8
 {
     public class Cpu
     {
-        private Timer delayTimer;
+        private readonly Memory ram;
+        private readonly Stack<ushort> stack;
+        private readonly Display display;
+        private readonly Audio beep;
+        private readonly Random rnd;
+        private readonly Timer delayTimer;
+        private readonly bool[] keysPressed;
 
         // Registers
-        private byte[] v;                       // registers V0 to VF
-
+        private readonly byte[] v;              // registers V0 to V15
         private byte dt;                        // Delay timer
         private byte st;                        // Sound Timer
         private ushort i;                       // Address register
         private ushort pc;                      // Program Counter
 
-        // Halt CPU?
         private bool halt;
-
-        // 4K RAM
-        private Memory ram;
-
-        // Stack
-        private Stack<ushort> stack;
-
-        // Display
-        private Display display;
-
-        // Keys
-        private bool[] keysPressed;
-
-        // BEEP!
-        private Audio beep;
-
-        Random rnd;
 
         public Cpu(Display display, Memory ram, Audio audio, bool[] keysPressed)
         {
@@ -74,9 +61,9 @@ namespace Chip8
 
         public void Decode()
         {
-            var opcode = ram.ram[pc];
+            var opcode = ram.Ram[pc];
             var param = opcode & 0xf;
-            var data = ram.ram[pc + 1];
+            var data = ram.Ram[pc + 1];
 
             // Helpers for when using Vx and Vy to make them easier to read
             byte x = (byte)param;
@@ -106,18 +93,20 @@ namespace Chip8
                             pc = stack.Pop();
                         }
                     }
+
                     break;
 
                 case 0x1:     // JP nnn
-                    pc = (ushort)(param * 256 + data);
+                    pc = (ushort)((param * 256) + data);
                     break;
 
                 case 0x2:     // CALL nnn
                     if (stack.Count < 15)
                     {
                         stack.Push(pc);
-                        pc = (ushort)(param * 256 + data);
+                        pc = (ushort)((param * 256) + data);
                     }
+
                     break;
 
                 case 0x3:     // SE Vx, byte
@@ -125,6 +114,7 @@ namespace Chip8
                     {
                         pc += 2;        // skip next instruction if equal
                     }
+
                     break;
 
                 case 0x4:     // SNE Vx, byte
@@ -132,6 +122,7 @@ namespace Chip8
                     {
                         pc += 2;        // skip next instruction if not equal
                     }
+
                     break;
 
                 case 0x5:     // SE Vx, Vy
@@ -139,14 +130,17 @@ namespace Chip8
                     {
                         pc += 2;        // skip next instruction if equal
                     }
+
                     break;
 
                 case 0x6:     // LD Vx, byte
                     v[x] = data;
+
                     break;
 
                 case 0x7:     // ADD Vx, byte
                     v[x] += data;
+
                     break;
 
                 case 0x8:     // Maths ops
@@ -196,6 +190,7 @@ namespace Chip8
                             v[x] <<= 1;
                             break;
                     }
+
                     break;
 
                 case 0x9:     // SNE Vx, Vy
@@ -203,14 +198,15 @@ namespace Chip8
                     {
                         pc += 2;    // skip next instruction if not equal
                     }
+
                     break;
 
                 case 0xa:    // LD I, nnn
-                    i = (ushort)(param * 256 + data);
+                    i = (ushort)((param * 256) + data);
                     break;
 
                 case 0xb:    // JP V0, nnn
-                    pc = (ushort)(param * 256 + data + v[0]);
+                    pc = (ushort)((param * 256) + data + v[0]);
                     break;
 
                 case 0xc:    // RND Vx, byte
@@ -230,6 +226,7 @@ namespace Chip8
                             {
                                 pc += 2;
                             }
+
                             break;
 
                         case 0xa1:  // SKNP Vx
@@ -238,8 +235,10 @@ namespace Chip8
                             {
                                 pc += 2;
                             }
+
                             break;
                     }
+
                     break;
 
                 case 0xf:   // Misc and keyboard
@@ -285,25 +284,28 @@ namespace Chip8
                             break;
 
                         case 0x33:  // LD B, Vx
-                            ram.ram[i] = (byte)(v[x] / 100);
-                            ram.ram[i + 1] = (byte)((v[x] / 10) % 10);
-                            ram.ram[i + 2] = (byte)(v[x] % 10);
+                            ram.Ram[i] = (byte)(v[x] / 100);
+                            ram.Ram[i + 1] = (byte)((v[x] / 10) % 10);
+                            ram.Ram[i + 2] = (byte)(v[x] % 10);
                             break;
 
                         case 0x55:  // LD [I], Vx
                             for (int reg = 0; reg <= x; reg++)
                             {
-                                ram.ram[i + reg] = v[reg];
+                                ram.Ram[i + reg] = v[reg];
                             }
+
                             break;
 
                         case 0x65:  // LD Vx, [I]
                             for (int reg = 0; reg <= x; reg++)
                             {
-                                v[reg] = ram.ram[i + reg];
+                                v[reg] = ram.Ram[i + reg];
                             }
+
                             break;
                     }
+
                     break;
             }
         }

@@ -1,12 +1,11 @@
 namespace Chip8
 {
-    internal class Program
+    internal static class Program
     {
         private static void Main(string[] args)
         {
-            var Chip8Machine = new Machine("SI.ch8");
-
-            Chip8Machine.Run();
+            var machine = new Machine("SI.ch8");
+            machine.Run();
         }
     }
 }

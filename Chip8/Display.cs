@@ -2,22 +2,22 @@ namespace Chip8
 {
     public class Display
     {
-        public Memory ram;
-
-        public int[] screen;
-        public byte[] pixels;
-
-        private const uint ink = 0xffffffff;
-        private const uint paper = 0x000000ff;
+        private const uint Ink = 0xffffffff;
+        private const uint Paper = 0x000000ff;
         private const int ScreenWidth = 64;
         private const int ScreenHeight = 32;
+
+        private readonly Memory ram;
+        private readonly int[] screen;
 
         public Display(Memory ram)
         {
             this.ram = ram;
             screen = new int[ScreenWidth * ScreenHeight];
-            pixels = new byte[ScreenWidth * ScreenHeight * 4];
+            Pixels = new byte[ScreenWidth * ScreenHeight * 4];
         }
+
+        public byte[] Pixels { get; set; }
 
         public byte DrawSprite(int x, int y, int height, ushort dataAddr)
         {
@@ -25,7 +25,7 @@ namespace Chip8
 
             for (int dy = 0; dy < height; dy++)
             {
-                var bits = ram.ram[dataAddr + dy];
+                var bits = ram.Ram[dataAddr + dy];
 
                 for (int dx = 0; dx < 8; dx++)
                 {
@@ -36,8 +36,10 @@ namespace Chip8
                         {
                             collision = 1;
                         }
+
                         screen[pos] ^= 1;
                     }
+
                     bits <<= 1;
                 }
             }
@@ -61,15 +63,15 @@ namespace Chip8
             {
                 for (int x = 0; x < 64; x++)
                 {
-                    int pos = y * 64 + x;
+                    int pos = (y * 64) + x;
 
-                    pixelColour = screen[pos] == 1 ? ink : paper;
+                    pixelColour = screen[pos] == 1 ? Ink : Paper;
 
                     pos *= 4;
-                    pixels[pos + 0] = (byte)((pixelColour >> 8) & 255);
-                    pixels[pos + 1] = (byte)((pixelColour >> 16) & 255);
-                    pixels[pos + 2] = (byte)((pixelColour >> 24) & 255);
-                    pixels[pos + 3] = 0xff;
+                    Pixels[pos + 0] = (byte)((pixelColour >> 8) & 255);
+                    Pixels[pos + 1] = (byte)((pixelColour >> 16) & 255);
+                    Pixels[pos + 2] = (byte)((pixelColour >> 24) & 255);
+                    Pixels[pos + 3] = 0xff;
                 }
             }
         }

@@ -1,22 +1,22 @@
-using SFML.Graphics;
-using SFML.System;
-using SFML.Window;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using SFML.Graphics;
+using SFML.System;
+using SFML.Window;
 
 namespace Chip8
 {
     internal class Machine
     {
-        private Cpu cpu;
-        private Memory ram;
-        private Display display;
-        private Audio audio;
-        private string RomName;
+        private readonly Cpu cpu;
+        private readonly Memory ram;
+        private readonly Display display;
+        private readonly Audio audio;
+        private readonly string romName;
 
         // Keyboard
-        private Dictionary<Keyboard.Key, int> keyCodes = new Dictionary<Keyboard.Key, int>
+        private readonly Dictionary<Keyboard.Key, int> keyCodes = new Dictionary<Keyboard.Key, int>
         {
             [Keyboard.Key.X] = 0x0,
             [Keyboard.Key.Num1] = 0x1,
@@ -36,17 +36,18 @@ namespace Chip8
             [Keyboard.Key.V] = 0xf
         };
 
-        public bool[] keysPressed = new bool[16];
-
-        public Machine(string Rom)
+        public Machine(string rom)
         {
+            KeysPressed = new bool[16];
             ram = new Memory();
             audio = new Audio();
             display = new Display(ram);
-            cpu = new Cpu(display, ram, audio, keysPressed);
+            cpu = new Cpu(display, ram, audio, KeysPressed);
 
-            RomName = Rom;
+            romName = rom;
         }
+
+        public bool[] KeysPressed { get; set; }
 
         public void Run()
         {
@@ -61,8 +62,8 @@ namespace Chip8
             var frameBuffer = new Sprite(texture);
             frameBuffer.Scale = new Vector2f(20, 20);
 
-            var program = File.ReadAllBytes(RomName);
-            Array.Copy(program, 0, ram.ram, 0x200, program.Length);
+            var program = File.ReadAllBytes(romName);
+            Array.Copy(program, 0, ram.Ram, 0x200, program.Length);
 
             while (window.IsOpen)
             {
@@ -70,7 +71,7 @@ namespace Chip8
 
                 cpu.Decode();
                 display.UpdatePixels();
-                texture.Update(display.pixels);
+                texture.Update(display.Pixels);
                 window.Draw(frameBuffer);
 
                 window.Display();
@@ -81,7 +82,7 @@ namespace Chip8
         {
             if (keyCodes.TryGetValue(e.Code, out int key))
             {
-                keysPressed[key] = false;
+                KeysPressed[key] = false;
             }
         }
 
@@ -89,7 +90,7 @@ namespace Chip8
         {
             if (keyCodes.TryGetValue(e.Code, out int key))
             {
-                keysPressed[key] = true;
+                KeysPressed[key] = true;
             }
             else
             {

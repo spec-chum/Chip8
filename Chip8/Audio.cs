@@ -4,10 +4,9 @@ namespace Chip8
 {
     public class Audio
     {
-        private short[] raw;
-        private SoundBuffer buffer;
-
-        public Sound sound;
+        private readonly short[] raw;
+        private readonly SoundBuffer buffer;
+        private readonly Sound sound;
 
         public Audio()
         {

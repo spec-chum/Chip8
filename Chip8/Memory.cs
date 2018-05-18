@@ -24,14 +24,14 @@ namespace Chip8
               0xF0, 0x80, 0xF0, 0x80, 0x80  // F
         };
 
-        public byte[] ram;
-
         public Memory()
         {
-            ram = new byte[4096];
+            Ram = new byte[4096];
 
             // Copy font data to ram[0] for convenience
-            Array.Copy(fontData, ram, fontData.Length);
+            Array.Copy(fontData, Ram, fontData.Length);
         }
+
+        public byte[] Ram { get; set; }
     }
 }

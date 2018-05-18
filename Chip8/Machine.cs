@@ -13,6 +13,7 @@ namespace Chip8
         private Memory ram;
         private Display display;
         private Audio audio;
+        private string RomName;
 
         // Keyboard
         private Dictionary<Keyboard.Key, int> keyCodes = new Dictionary<Keyboard.Key, int>
@@ -37,12 +38,14 @@ namespace Chip8
 
         public bool[] keysPressed = new bool[16];
 
-        public Machine()
+        public Machine(string Rom)
         {
             ram = new Memory();
             audio = new Audio();
             display = new Display(ram);
             cpu = new Cpu(display, ram, audio, keysPressed);
+
+            RomName = Rom;
         }
 
         public void Run()
@@ -58,7 +61,7 @@ namespace Chip8
             var frameBuffer = new Sprite(texture);
             frameBuffer.Scale = new Vector2f(20, 20);
 
-            var program = File.ReadAllBytes("SI.ch8");
+            var program = File.ReadAllBytes(RomName);
             Array.Copy(program, 0, ram.ram, 0x200, program.Length);
 
             while (window.IsOpen)

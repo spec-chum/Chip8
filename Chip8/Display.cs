@@ -32,7 +32,7 @@ namespace Chip8
                     int pos = ((y + dy) * 64) + (x + dx);
                     if ((bits & 128) != 0)
                     {
-                        if(screen[pos] == 1 && collision == 0)
+                        if (screen[pos] == 1 && collision == 0)
                         {
                             collision = 1;
                         }

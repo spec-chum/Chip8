@@ -1,4 +1,3 @@
-using SFML.Audio;
 using System;
 using System.Collections.Generic;
 using System.Timers;
@@ -35,6 +34,8 @@ namespace Chip8
         // BEEP!
         private Audio beep;
 
+        Random rnd;
+
         public Cpu(Display display, Memory ram, Audio audio, bool[] keysPressed)
         {
             v = new byte[16];
@@ -67,7 +68,8 @@ namespace Chip8
                 }
             };
             delayTimer.Start();
-           
+
+            rnd = new Random();
         }
 
         public void Decode()
@@ -212,7 +214,6 @@ namespace Chip8
                     break;
 
                 case 0xc:    // RND Vx, byte
-                    Random rnd = new Random();
                     v[x] = (byte)(rnd.Next(0, 255) & data);
                     break;
 

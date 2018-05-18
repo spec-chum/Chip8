@@ -41,7 +41,7 @@ namespace Chip8
         {
             ram = new Memory();
             audio = new Audio();
-            display = new Display(ram);            
+            display = new Display(ram);
             cpu = new Cpu(display, ram, audio, keysPressed);
         }
 
@@ -90,7 +90,7 @@ namespace Chip8
             }
             else
             {
-                if(e.Code == Keyboard.Key.Escape)
+                if (e.Code == Keyboard.Key.Escape)
                 {
                     var window = (Window)sender;
                     window.Close();

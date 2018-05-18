@@ -284,7 +284,7 @@ namespace Chip8
                             break;
 
                         case 0x33:  // LD B, Vx
-                            ram.Ram[i] = (byte)(v[x] / 100);
+                            ram.Ram[i + 0] = (byte)(v[x] / 100);
                             ram.Ram[i + 1] = (byte)((v[x] / 10) % 10);
                             ram.Ram[i + 2] = (byte)(v[x] % 10);
                             break;

@@ -43,7 +43,7 @@ namespace Chip8
 			ram = new Memory();
 			audio = new Audio();
 			display = new Display(ram);
-            cpu = new Cpu(display, ram, audio, KeysPressed);
+			cpu = new Cpu(display, ram, audio, KeysPressed);
 
 			romName = rom;
 		}
@@ -52,10 +52,10 @@ namespace Chip8
 
 		public void Run()
 		{
-            var window = new RenderWindow(new VideoMode(1280, 640), "CHIP-8", Styles.Default);
-            //window.SetVerticalSyncEnabled(true);
+			var window = new RenderWindow(new VideoMode(1280, 640), "CHIP-8", Styles.Default);
+			//window.SetVerticalSyncEnabled(true);
 
-            window.Closed += (s, e) => window.Close();
+			window.Closed += (s, e) => window.Close();
 
 			window.KeyPressed += OnKeyPressed;
 			window.KeyReleased += OnKeyReleased;
@@ -64,7 +64,7 @@ namespace Chip8
 			var frameBuffer = new Sprite(texture);
 			frameBuffer.Scale = new Vector2f(20, 20);
 
-            using (var fs = File.Open(romName, FileMode.Open))
+			using (var fs = File.Open(romName, FileMode.Open))
 			{
 				fs.Read(ram.Ram, 0x200, (int)fs.Length);
 			}
@@ -82,17 +82,17 @@ namespace Chip8
 
 				for (int i = 0; i < 500 / (int)fps; i++)
 				{
-                    cpu.Decode();
+					cpu.Decode();
 				}
 				
-                display.UpdatePixels();
+				display.UpdatePixels();
 				texture.Update(display.Pixels);
 				window.Draw(frameBuffer);
 
 				window.Display();
 
-                Thread.Sleep(16);
-            }
+				Thread.Sleep(16);
+			}
 		}
 
 		private void OnKeyReleased(object sender, KeyEventArgs e)

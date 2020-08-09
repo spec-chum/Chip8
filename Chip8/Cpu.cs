@@ -26,7 +26,7 @@ namespace Chip8
 		public Cpu(Display display, Memory ram, Audio audio, bool[] keysPressed)
 		{
 			v = new byte[16];
-            stack = new Stack<ushort>();
+			stack = new Stack<ushort>();
 			pc = 0x200;
 			dt = 0;
 			st = 0;

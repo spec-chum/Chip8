@@ -1,9 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 
 namespace Chip8
 {
@@ -18,22 +19,22 @@ namespace Chip8
 		// Keyboard
 		private readonly Dictionary<Keyboard.Key, int> keyCodes = new Dictionary<Keyboard.Key, int>
 		{
-			[Keyboard.Key.X] = 0x0,
+			[Keyboard.Key.X]	= 0x0,
 			[Keyboard.Key.Num1] = 0x1,
 			[Keyboard.Key.Num2] = 0x2,
 			[Keyboard.Key.Num3] = 0x3,
-			[Keyboard.Key.Q] = 0x4,
-			[Keyboard.Key.W] = 0x5,
-			[Keyboard.Key.E] = 0x6,
-			[Keyboard.Key.A] = 0x7,
-			[Keyboard.Key.S] = 0x8,
-			[Keyboard.Key.D] = 0x9,
-			[Keyboard.Key.Z] = 0xa,
-			[Keyboard.Key.C] = 0xb,
+			[Keyboard.Key.Q]	= 0x4,
+			[Keyboard.Key.W]	= 0x5,
+			[Keyboard.Key.E]	= 0x6,
+			[Keyboard.Key.A]	= 0x7,
+			[Keyboard.Key.S]	= 0x8,
+			[Keyboard.Key.D]	= 0x9,
+			[Keyboard.Key.Z]	= 0xa,
+			[Keyboard.Key.C]	= 0xb,
 			[Keyboard.Key.Num4] = 0xc,
-			[Keyboard.Key.R] = 0xd,
-			[Keyboard.Key.F] = 0xe,
-			[Keyboard.Key.V] = 0xf
+			[Keyboard.Key.R]	= 0xd,
+			[Keyboard.Key.F]	= 0xe,
+			[Keyboard.Key.V]	= 0xf
 		};
 
 		public Machine(string rom)
@@ -42,7 +43,7 @@ namespace Chip8
 			ram = new Memory();
 			audio = new Audio();
 			display = new Display(ram);
-			cpu = new Cpu(display, ram, audio, KeysPressed);
+            cpu = new Cpu(display, ram, audio, KeysPressed);
 
 			romName = rom;
 		}
@@ -51,9 +52,10 @@ namespace Chip8
 
 		public void Run()
 		{
-			var window = new RenderWindow(new VideoMode(1280, 640), "CHIP-8", Styles.Default);
+            var window = new RenderWindow(new VideoMode(1280, 640), "CHIP-8", Styles.Default);
+            //window.SetVerticalSyncEnabled(true);
 
-			window.Closed += (s, e) => window.Close();
+            window.Closed += (s, e) => window.Close();
 
 			window.KeyPressed += OnKeyPressed;
 			window.KeyReleased += OnKeyReleased;
@@ -62,20 +64,35 @@ namespace Chip8
 			var frameBuffer = new Sprite(texture);
 			frameBuffer.Scale = new Vector2f(20, 20);
 
-			var program = File.ReadAllBytes(romName);
-			Array.Copy(program, 0, ram.Ram, 0x200, program.Length);
+            using (var fs = File.Open(romName, FileMode.Open))
+			{
+				fs.Read(ram.Ram, 0x200, (int)fs.Length);
+			}
+
+			Clock fpsClock = new Clock();
 
 			while (window.IsOpen)
 			{
+				float fps = 1 / fpsClock.Restart().AsSeconds();
+
 				window.DispatchEvents();
 
-				cpu.Decode();
-				display.UpdatePixels();
+				Console.SetCursorPosition(0, 2);
+				Console.WriteLine("FPS: {0}", fps.ToString().PadRight(4));
+
+				for (int i = 0; i < 500 / (int)fps; i++)
+				{
+                    cpu.Decode();
+				}
+				
+                display.UpdatePixels();
 				texture.Update(display.Pixels);
 				window.Draw(frameBuffer);
 
 				window.Display();
-			}
+
+                Thread.Sleep(16);
+            }
 		}
 
 		private void OnKeyReleased(object sender, KeyEventArgs e)

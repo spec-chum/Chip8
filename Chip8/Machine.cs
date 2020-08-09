@@ -53,7 +53,7 @@ namespace Chip8
 		public void Run()
 		{
 			var window = new RenderWindow(new VideoMode(1280, 640), "CHIP-8", Styles.Default);
-			//window.SetVerticalSyncEnabled(true);
+			window.SetFramerateLimit(60);
 
 			window.Closed += (s, e) => window.Close();
 
@@ -73,7 +73,7 @@ namespace Chip8
 
 			while (window.IsOpen)
 			{
-				float fps = 1 / fpsClock.Restart().AsSeconds();
+				var fps = 1 / fpsClock.Restart().AsSeconds();
 
 				window.DispatchEvents();
 
@@ -90,8 +90,6 @@ namespace Chip8
 				window.Draw(frameBuffer);
 
 				window.Display();
-
-				Thread.Sleep(16);
 			}
 		}
 

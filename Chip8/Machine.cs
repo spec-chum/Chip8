@@ -17,24 +17,24 @@ namespace Chip8
 		private readonly string romName;
 
 		// Keyboard
-		private readonly Dictionary<Keyboard.Key, int> keyCodes = new Dictionary<Keyboard.Key, int>
+		private readonly List<Keyboard.Key> keyCodes = new List<Keyboard.Key>
 		{
-			[Keyboard.Key.X]	= 0x0,
-			[Keyboard.Key.Num1] = 0x1,
-			[Keyboard.Key.Num2] = 0x2,
-			[Keyboard.Key.Num3] = 0x3,
-			[Keyboard.Key.Q]	= 0x4,
-			[Keyboard.Key.W]	= 0x5,
-			[Keyboard.Key.E]	= 0x6,
-			[Keyboard.Key.A]	= 0x7,
-			[Keyboard.Key.S]	= 0x8,
-			[Keyboard.Key.D]	= 0x9,
-			[Keyboard.Key.Z]	= 0xa,
-			[Keyboard.Key.C]	= 0xb,
-			[Keyboard.Key.Num4] = 0xc,
-			[Keyboard.Key.R]	= 0xd,
-			[Keyboard.Key.F]	= 0xe,
-			[Keyboard.Key.V]	= 0xf
+			Keyboard.Key.X,
+			Keyboard.Key.Num1,
+			Keyboard.Key.Num2,
+			Keyboard.Key.Num3,
+			Keyboard.Key.Q,
+			Keyboard.Key.W,
+			Keyboard.Key.E,
+			Keyboard.Key.A,
+			Keyboard.Key.S,
+			Keyboard.Key.D,
+			Keyboard.Key.Z,
+			Keyboard.Key.C,
+			Keyboard.Key.Num4,
+			Keyboard.Key.R,
+			Keyboard.Key.F,
+			Keyboard.Key.V
 		};
 
 		public Machine(string rom)
@@ -69,7 +69,7 @@ namespace Chip8
 				fs.Read(ram.Ram, 0x200, (int)fs.Length);
 			}
 
-			Clock fpsClock = new Clock();
+			var fpsClock = new Clock();
 
 			while (window.IsOpen)
 			{
@@ -84,7 +84,7 @@ namespace Chip8
 				{
 					cpu.Decode();
 				}
-				
+
 				display.UpdatePixels();
 				texture.Update(display.Pixels);
 				window.Draw(frameBuffer);
@@ -95,24 +95,25 @@ namespace Chip8
 
 		private void OnKeyReleased(object sender, KeyEventArgs e)
 		{
-			if (keyCodes.TryGetValue(e.Code, out int key))
+			var keyPressedIndex = keyCodes.FindIndex(key => key == e.Code);
+			if (keyPressedIndex != -1)
 			{
-				KeysPressed[key] = false;
+				KeysPressed[keyPressedIndex] = false;
 			}
 		}
 
 		private void OnKeyPressed(object sender, KeyEventArgs e)
 		{
-			if (keyCodes.TryGetValue(e.Code, out int key))
+			var keyPressedIndex = keyCodes.FindIndex(key => key == e.Code);
+			if (keyPressedIndex != -1)
 			{
-				KeysPressed[key] = true;
+				KeysPressed[keyPressedIndex] = true;
 			}
 			else
 			{
 				if (e.Code == Keyboard.Key.Escape)
 				{
-					var window = (Window)sender;
-					window.Close();
+					((Window)sender).Close();
 				}
 			}
 		}

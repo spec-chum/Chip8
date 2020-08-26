@@ -77,20 +77,19 @@ namespace Chip8
 			switch (opcode >> 4)
 			{
 				case 0x0:
-					if (data == 0xe0)
+					switch (data)
 					{
-						// CLS
-						display.Clear();
-					}
-					else if (data == 0xee)
-					{
-						// RET
-						if (stack.Count > 0)
-						{
-							pc = stack.Pop();
-						}
-					}
+						case 0xe0:  // CLS
+							display.Clear();
+							break;
 
+						case 0xee:  // RET
+							if (stack.Count > 0)
+							{
+								pc = stack.Pop();
+							}
+							break;
+					}
 					break;
 
 				case 0x1:     // JP nnn

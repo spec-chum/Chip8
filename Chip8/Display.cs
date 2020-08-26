@@ -31,7 +31,7 @@ namespace Chip8
 
 				for (int dx = 0; dx < 8; dx++)
 				{
-					int pos = ((y + dy) * 64) + (x + dx);
+					int pos = ((y + dy) * ScreenWidth) + (x + dx);
 					if ((bits & 128) != 0)
 					{
 						if (screen[pos] == 1 && collision == 0)
@@ -51,25 +51,25 @@ namespace Chip8
 
 		public void Clear()
 		{
-			Array.Clear(screen, 0, 2048);
+			Array.Clear(screen, 0, ScreenWidth * ScreenHeight);
 		}
 
 		public void UpdatePixels()
 		{
 			uint pixelColour;
 
-			for (int y = 0; y < 32; y++)
+			for (int y = 0; y < ScreenHeight; y++)
 			{
-				for (int x = 0; x < 64; x++)
+				for (int x = 0; x < ScreenWidth; x++)
 				{
-					int pos = (y * 64) + x;
+					int pos = (y * ScreenWidth) + x;
 
 					pixelColour = screen[pos] == 1 ? Ink : Paper;
 
 					pos *= 4;
-					Pixels[pos + 0] = (byte)((pixelColour >> 8) & 255);
-					Pixels[pos + 1] = (byte)((pixelColour >> 16) & 255);
-					Pixels[pos + 2] = (byte)((pixelColour >> 24) & 255);
+					Pixels[pos + 0] = (byte)((pixelColour >> 8) & 0xff);
+					Pixels[pos + 1] = (byte)((pixelColour >> 16) & 0xff);
+					Pixels[pos + 2] = (byte)((pixelColour >> 24) & 0xff);
 					Pixels[pos + 3] = 0xff;
 				}
 			}

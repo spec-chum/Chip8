@@ -5,7 +5,7 @@ namespace Chip8
 	public class Display
 	{
 		private const uint Ink = 0xffffffff;
-		private const uint Paper = 0x000000ff;
+		private const uint Paper = 0xff000000;
 		private const int ScreenWidth = 64;
 		private const int ScreenHeight = 32;
 
@@ -19,7 +19,7 @@ namespace Chip8
 			Pixels = new byte[ScreenWidth * ScreenHeight * 4];
 		}
 
-		public byte[] Pixels { get; set; }
+		public byte[] Pixels { get; }
 
 		public byte DrawSprite(int x, int y, int height, ushort dataAddr)
 		{
@@ -32,7 +32,7 @@ namespace Chip8
 				for (int dx = 0; dx < 8; dx++)
 				{
 					int pos = ((y + dy) * ScreenWidth) + (x + dx);
-					if ((bits & 128) != 0)
+					if ((bits & 0x80) != 0)
 					{
 						if (screen[pos] == 1 && collision == 0)
 						{
@@ -51,10 +51,10 @@ namespace Chip8
 
 		public void Clear()
 		{
-			Array.Clear(screen, 0, ScreenWidth * ScreenHeight);
+			Array.Clear(screen, 0, screen.Length);
 		}
 
-		public void UpdatePixels()
+		public unsafe void UpdatePixels()
 		{
 			uint pixelColour;
 
@@ -66,11 +66,11 @@ namespace Chip8
 
 					pixelColour = screen[pos] == 1 ? Ink : Paper;
 
-					pos *= 4;
-					Pixels[pos + 0] = (byte)((pixelColour >> 8) & 0xff);
-					Pixels[pos + 1] = (byte)((pixelColour >> 16) & 0xff);
-					Pixels[pos + 2] = (byte)((pixelColour >> 24) & 0xff);
-					Pixels[pos + 3] = 0xff;
+					fixed (byte* bptr = &Pixels[0])
+					{
+						uint* pixel = (uint*)bptr;
+						pixel[pos] = pixelColour;
+					}
 				}
 			}
 		}

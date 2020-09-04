@@ -14,6 +14,7 @@ namespace Chip8
 		private readonly Memory ram;
 		private readonly Display display;
 		private readonly Audio audio;
+		private readonly bool[] KeysPressed;
 		private readonly string romName;
 
 		// Keyboard
@@ -47,9 +48,6 @@ namespace Chip8
 
 			romName = rom;
 		}
-
-		public bool[] KeysPressed { get; set; }
-
 		public void Run()
 		{
 			var window = new RenderWindow(new VideoMode(1280, 640), "CHIP-8", Styles.Default);
@@ -95,7 +93,7 @@ namespace Chip8
 
 		private void OnKeyReleased(object sender, KeyEventArgs e)
 		{
-			var keyPressedIndex = keyCodes.FindIndex(key => key == e.Code);
+			var keyPressedIndex = keyCodes.IndexOf(e.Code);
 			if (keyPressedIndex != -1)
 			{
 				KeysPressed[keyPressedIndex] = false;
@@ -104,7 +102,7 @@ namespace Chip8
 
 		private void OnKeyPressed(object sender, KeyEventArgs e)
 		{
-			var keyPressedIndex = keyCodes.FindIndex(key => key == e.Code);
+			var keyPressedIndex = keyCodes.IndexOf(e.Code);
 			if (keyPressedIndex != -1)
 			{
 				KeysPressed[keyPressedIndex] = true;

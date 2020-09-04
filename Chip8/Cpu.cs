@@ -21,7 +21,7 @@ namespace Chip8
 		private ushort i;                       // Address register
 		private ushort pc;                      // Program Counter
 
-		private bool halt;
+		private bool halted;
 
 		public Cpu(Display display, Memory ram, Audio audio, bool[] keysPressed)
 		{
@@ -102,7 +102,6 @@ namespace Chip8
 						stack.Push(pc);
 						pc = (ushort)((param * 256) + data);
 					}
-
 					break;
 
 				case 0x3:     // SE Vx, byte
@@ -110,7 +109,6 @@ namespace Chip8
 					{
 						pc += 2;        // skip next instruction if equal
 					}
-
 					break;
 
 				case 0x4:     // SNE Vx, byte
@@ -118,7 +116,6 @@ namespace Chip8
 					{
 						pc += 2;        // skip next instruction if not equal
 					}
-
 					break;
 
 				case 0x5:     // SE Vx, Vy
@@ -126,17 +123,14 @@ namespace Chip8
 					{
 						pc += 2;        // skip next instruction if equal
 					}
-
 					break;
 
 				case 0x6:     // LD Vx, byte
 					v[x] = data;
-
 					break;
 
 				case 0x7:     // ADD Vx, byte
 					v[x] += data;
-
 					break;
 
 				case 0x8:     // Maths ops
@@ -186,7 +180,6 @@ namespace Chip8
 							v[x] <<= 1;
 							break;
 					}
-
 					break;
 
 				case 0x9:     // SNE Vx, Vy
@@ -194,7 +187,6 @@ namespace Chip8
 					{
 						pc += 2;    // skip next instruction if not equal
 					}
-
 					break;
 
 				case 0xa:    // LD I, nnn
@@ -222,7 +214,6 @@ namespace Chip8
 							{
 								pc += 2;
 							}
-
 							break;
 
 						case 0xa1:  // SKNP Vx
@@ -231,10 +222,8 @@ namespace Chip8
 							{
 								pc += 2;
 							}
-
 							break;
 					}
-
 					break;
 
 				case 0xf:   // Misc and keyboard
@@ -245,21 +234,20 @@ namespace Chip8
 							break;
 
 						case 0xa:   // LD Vx, K
-							if (halt)
+							if (halted)
 							{
 								for (int k = 0; k < 16; k++)
 								{
 									if (keysPressed[k])
 									{
-										halt = false;
+										halted = false;
 										v[x] = (byte)k;
-										Console.WriteLine("Key {0} pressed.", k);
 										return;
 									}
 								}
 							}
 
-							halt = true;
+							halted = true;
 							pc -= 2;
 							break;
 
@@ -281,7 +269,7 @@ namespace Chip8
 
 						case 0x33:  // LD B, Vx
 							ram.Ram[i + 0] = (byte)(v[x] / 100);
-							ram.Ram[i + 1] = (byte)((v[x] / 10) % 10);
+							ram.Ram[i + 1] = (byte)(v[x] / 10 % 10);
 							ram.Ram[i + 2] = (byte)(v[x] % 10);
 							break;
 
@@ -290,7 +278,6 @@ namespace Chip8
 							{
 								ram.Ram[i + reg] = v[reg];
 							}
-
 							break;
 
 						case 0x65:  // LD Vx, [I]
@@ -298,7 +285,6 @@ namespace Chip8
 							{
 								v[reg] = ram.Ram[i + reg];
 							}
-
 							break;
 					}
 

@@ -28,18 +28,19 @@ namespace Chip8
 			for (int dy = 0; dy < height; dy++)
 			{
 				var bits = ram.Ram[dataAddr + dy];
+				int yPos = (y + dy) * ScreenWidth;
 
 				for (int dx = 0; dx < 8; dx++)
 				{
-					int pos = ((y + dy) * ScreenWidth) + (x + dx);
+					int xyPos = yPos + x + dx;
 					if ((bits & 0x80) != 0)
 					{
-						if (screen[pos] == 1 && collision == 0)
+						if (screen[xyPos] == 1)
 						{
 							collision = 1;
 						}
 
-						screen[pos] ^= 1;
+						screen[xyPos] ^= 1;
 					}
 
 					bits <<= 1;
@@ -60,16 +61,17 @@ namespace Chip8
 
 			for (int y = 0; y < ScreenHeight; y++)
 			{
+				int yPos = y * ScreenWidth;
+
 				for (int x = 0; x < ScreenWidth; x++)
 				{
-					int pos = (y * ScreenWidth) + x;
-
-					pixelColour = screen[pos] == 1 ? Ink : Paper;
+					int xyPos = yPos + x;
+					pixelColour = screen[xyPos] == 1 ? Ink : Paper;
 
 					fixed (byte* bptr = &Pixels[0])
 					{
 						uint* pixel = (uint*)bptr;
-						pixel[pos] = pixelColour;
+						pixel[xyPos] = pixelColour;
 					}
 				}
 			}

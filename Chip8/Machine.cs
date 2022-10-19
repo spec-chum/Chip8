@@ -2,9 +2,8 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace Chip8
 {
@@ -16,27 +15,6 @@ namespace Chip8
 		private readonly Audio audio;
 		private readonly bool[] KeysPressed;
 		private readonly string romName;
-
-		// Keyboard
-		private readonly List<Keyboard.Key> keyCodes = new List<Keyboard.Key>
-		{
-			Keyboard.Key.X,
-			Keyboard.Key.Num1,
-			Keyboard.Key.Num2,
-			Keyboard.Key.Num3,
-			Keyboard.Key.Q,
-			Keyboard.Key.W,
-			Keyboard.Key.E,
-			Keyboard.Key.A,
-			Keyboard.Key.S,
-			Keyboard.Key.D,
-			Keyboard.Key.Z,
-			Keyboard.Key.C,
-			Keyboard.Key.Num4,
-			Keyboard.Key.R,
-			Keyboard.Key.F,
-			Keyboard.Key.V
-		};
 
 		public Machine(string rom)
 		{
@@ -52,6 +30,7 @@ namespace Chip8
 		{
 			var window = new RenderWindow(new VideoMode(1280, 640), "CHIP-8", Styles.Default);
 			window.SetFramerateLimit(60);
+			window.SetVerticalSyncEnabled(false);
 
 			window.Closed += (s, e) => window.Close();
 
@@ -68,6 +47,7 @@ namespace Chip8
 			}
 
 			var fpsClock = new Clock();
+			var pixels = MemoryMarshal.Cast<byte, uint>(display.Pixels.AsSpan());
 
 			while (window.IsOpen)
 			{
@@ -78,12 +58,13 @@ namespace Chip8
 				Console.SetCursorPosition(0, 2);
 				Console.WriteLine("FPS: {0}", fps.ToString().PadRight(4));
 
-				for (int i = 0; i < 500 / (int)fps; i++)
+				for (int i = 0; i < 500 / 60; i++)
 				{
 					cpu.Decode();
 				}
 
-				display.UpdatePixels();
+
+				display.UpdatePixels(pixels);
 				texture.Update(display.Pixels);
 				window.Draw(frameBuffer);
 
@@ -91,29 +72,49 @@ namespace Chip8
 			}
 		}
 
+		private static int GetKeyIndex(Keyboard.Key key) => key switch
+		{
+			Keyboard.Key.X => 0,
+			Keyboard.Key.Num1 => 1,
+			Keyboard.Key.Num2 => 2,
+			Keyboard.Key.Num3 => 3,
+			Keyboard.Key.Q => 4,
+			Keyboard.Key.W => 5,
+			Keyboard.Key.E => 6,
+			Keyboard.Key.A => 7,
+			Keyboard.Key.S => 8,
+			Keyboard.Key.D => 9,
+			Keyboard.Key.Z => 10,
+			Keyboard.Key.C => 11,
+			Keyboard.Key.Num4 => 12,
+			Keyboard.Key.R => 13,
+			Keyboard.Key.F => 14,
+			Keyboard.Key.V => 15,
+			_ => -1
+		};
+
 		private void OnKeyReleased(object sender, KeyEventArgs e)
 		{
-			var keyPressedIndex = keyCodes.IndexOf(e.Code);
-			if (keyPressedIndex != -1)
+			int index = GetKeyIndex(e.Code);
+			if (index != -1)
 			{
-				KeysPressed[keyPressedIndex] = false;
+				KeysPressed[index] = false;
 			}
 		}
 
 		private void OnKeyPressed(object sender, KeyEventArgs e)
 		{
-			var keyPressedIndex = keyCodes.IndexOf(e.Code);
-			if (keyPressedIndex != -1)
+			if (e.Code == Keyboard.Key.Escape)
 			{
-				KeysPressed[keyPressedIndex] = true;
+				(sender as Window).Close();
+				return;
 			}
-			else
+
+			int index = GetKeyIndex(e.Code);
+			if (index != -1)
 			{
-				if (e.Code == Keyboard.Key.Escape)
-				{
-					((Window)sender).Close();
-				}
-			}
+				KeysPressed[index] = true;
+			}			
 		}
 	}
 }

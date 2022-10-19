@@ -1,4 +1,6 @@
 using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Chip8
 {
@@ -16,23 +18,26 @@ namespace Chip8
 		{
 			this.ram = ram;
 			screen = new byte[ScreenWidth * ScreenHeight];
-			Pixels = new byte[ScreenWidth * ScreenHeight * 4];
+			Pixels = new byte[ScreenWidth * ScreenHeight * sizeof(uint)];
 		}
 
 		public byte[] Pixels { get; }
 
 		public byte DrawSprite(int x, int y, int height, ushort dataAddr)
 		{
-			byte collision = 0;
+			x &= 63;
+			y &= 31;
 
-			for (int dy = 0; dy < height; dy++)
+			var collision = 0;
+
+			for (int dy = y; dy < y + height && dy < ScreenHeight; dy++)
 			{
-				var bits = ram.Ram[dataAddr + dy];
-				int yPos = (y + dy) * ScreenWidth;
+				var bits = ram.Ram[dataAddr + dy - y];
+				var yPos = dy * ScreenWidth;
 
-				for (int dx = 0; dx < 8; dx++)
+				for (int dx = x; dx < x + 8 && dx < ScreenWidth; dx++)
 				{
-					int xyPos = yPos + x + dx;
+					var xyPos = yPos + dx;
 					if ((bits & 0x80) != 0)
 					{
 						if (screen[xyPos] == 1)
@@ -47,7 +52,7 @@ namespace Chip8
 				}
 			}
 
-			return collision;
+			return (byte)collision;
 		}
 
 		public void Clear()
@@ -55,25 +60,11 @@ namespace Chip8
 			Array.Clear(screen, 0, screen.Length);
 		}
 
-		public unsafe void UpdatePixels()
+		public void UpdatePixels(Span<uint> pixels)
 		{
-			uint pixelColour;
-
-			for (int y = 0; y < ScreenHeight; y++)
+			for (int i = 0; i < screen.Length; i++)
 			{
-				int yPos = y * ScreenWidth;
-
-				for (int x = 0; x < ScreenWidth; x++)
-				{
-					int xyPos = yPos + x;
-					pixelColour = screen[xyPos] == 1 ? Ink : Paper;
-
-					fixed (byte* bptr = &Pixels[0])
-					{
-						uint* pixel = (uint*)bptr;
-						pixel[xyPos] = pixelColour;
-					}
-				}
+				pixels[i] = screen[i] == 1 ? Ink : Paper;
 			}
 		}
 	}

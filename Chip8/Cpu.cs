@@ -36,7 +36,7 @@ namespace Chip8
 			this.keysPressed = keysPressed;
 			beep = audio;
 
-			delayTimer = new Timer(16);
+			delayTimer = new Timer(16.67);
 			delayTimer.Elapsed += (s, e) =>
 			{
 				if (dt > 0)
@@ -54,7 +54,8 @@ namespace Chip8
 					beep.Stop();
 				}
 			};
-			delayTimer.Start();
+			delayTimer.AutoReset = true;
+			delayTimer.Enabled = true;
 
 			rnd = new Random();
 		}
@@ -68,7 +69,6 @@ namespace Chip8
 			// Helpers for when using Vx and Vy to make them easier to read
 			byte x = (byte)param;
 			byte y = (byte)((data >> 4) & 0xf);
-
 			Console.SetCursorPosition(0, 0);
 			Console.WriteLine("PC = {0:X4}", pc);
 
@@ -134,6 +134,8 @@ namespace Chip8
 					break;
 
 				case 0x8:     // Maths ops
+					int result;
+
 					switch (data & 0xf)
 					{
 						case 0x0:     // LD Vx, Vy
@@ -142,42 +144,50 @@ namespace Chip8
 
 						case 0x1:     // OR Vx, Vy
 							v[x] |= v[y];
+							v[0x0f] = 0;
 							break;
 
 						case 0x2:     // AND Vx, Vy
 							v[x] &= v[y];
+							v[0x0f] = 0;
 							break;
 
 						case 0x3:     // XOR Vx, Vy
 							v[x] ^= v[y];
+							v[0x0f] = 0;
 							break;
 
 						case 0x4:     // ADC Vx, Vy
+							result = v[x] + v[y];
+							v[x] = (byte)result;
 							// If result is over 255, we overflowed, so set carry flag, otherwise clear it
-							v[0xf] = (byte)(v[x] + v[y] > 255 ? 1 : 0);
-							v[x] += v[y];
+							v[0xf] = (byte)(result > 255 ? 1 : 0);
 							break;
 
 						case 0x5:     // SBC Vx, Vy
-							// If Vx is more or equal Vy, we can't overflow, so set carry flag, otherwise clear it
-							v[0xf] = (byte)(v[x] >= v[y] ? 1 : 0);
+									  // If Vx is more or equal Vy, we can't overflow, so set carry flag, otherwise clear it
 							v[x] -= v[y];
+							v[0xf] = (byte)(v[x] >= v[y] ? 1 : 0);
 							break;
 
 						case 0x6:    // SHR Vx
-							v[0xf] = (byte)(v[x] & 1);
+							v[x] = v[y];
+							result = v[x] & 1;
 							v[x] >>= 1;
+							v[0xf] = (byte)result;
 							break;
 
 						case 0x7:   // SUBN Vx, Vy
-							// If Vy is more or equal Vx, we can't overflow, so set carry flag, otherwise clear it
-							v[0xf] = (byte)(v[y] >= v[x] ? 1 : 0);
+									// If Vy is more or equal Vx, we can't overflow, so set carry flag, otherwise clear it
 							v[x] = (byte)(v[y] - v[x]);
+							v[0xf] = (byte)(v[y] >= v[x] ? 1 : 0);
 							break;
 
 						case 0xe:    // SHL Vx
-							v[0xf] = (byte)((v[x] & 128) != 0 ? 1 : 0);
+							v[x] = v[y];
+							result = (v[x] & 128) >> 7;
 							v[x] <<= 1;
+							v[0xf] = (byte)result;
 							break;
 					}
 					break;
@@ -236,7 +246,7 @@ namespace Chip8
 						case 0xa:   // LD Vx, K
 							if (halted)
 							{
-								for (int k = 0; k < 16; k++)
+								for (int k = 0; k < keysPressed.Length; k++)
 								{
 									if (keysPressed[k])
 									{
@@ -278,6 +288,7 @@ namespace Chip8
 							{
 								ram.Ram[i + reg] = v[reg];
 							}
+							i++;
 							break;
 
 						case 0x65:  // LD Vx, [I]
@@ -285,6 +296,7 @@ namespace Chip8
 							{
 								v[reg] = ram.Ram[i + reg];
 							}
+							i++;
 							break;
 					}
 

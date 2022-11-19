@@ -62,7 +62,7 @@ namespace Chip8
 
 		public void UpdatePixels(Span<uint> pixels)
 		{
-			for (int i = 0; i < screen.Length; i++)
+			for (int i = 0; i < pixels.Length; i++)
 			{
 				pixels[i] = screen[i] == 1 ? Ink : Paper;
 			}

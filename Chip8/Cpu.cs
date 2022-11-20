@@ -22,7 +22,8 @@ namespace Chip8
 		private ushort pc;                      // Program Counter
 
 		private bool halted;
-		public bool newFrame;
+
+		public bool CanDrawSprite;
 
 		public Cpu(Display display, Memory ram, Audio audio, bool[] keysPressed)
 		{
@@ -213,10 +214,10 @@ namespace Chip8
 					break;
 
 				case 0xd:   // DRW Vx, Vy, bytes
-					if (newFrame)
+					if (CanDrawSprite)
 					{
 						v[0xf] = display.DrawSprite(v[x], v[y], data & 0xf, i);
-						newFrame = false;
+						CanDrawSprite = false;
 					}
 					else
 					{
@@ -261,6 +262,7 @@ namespace Chip8
 									{
 										halted = false;
 										v[x] = (byte)k;
+										keysPressed[k] = false;
 										return;
 									}
 								}

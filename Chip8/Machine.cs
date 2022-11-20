@@ -58,7 +58,7 @@ namespace Chip8
 				Console.SetCursorPosition(0, 2);
 				Console.WriteLine("FPS: {0}", fps.ToString().PadRight(4));
 
-				cpu.newFrame = true;
+				cpu.CanDrawSprite = true;
 				for (int i = 0; i < 500 / 60; i++)
 				{
 					cpu.Decode();

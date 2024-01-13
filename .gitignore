@@ -260,3 +260,6 @@ paket-files/
 __pycache__/
 *.pyc
 /Chip8/Settings.StyleCop
+/Chip8/IBM.ch8
+/Chip8/SI.ch8
+/Chip8/test_opcode.ch8

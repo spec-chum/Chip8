@@ -1,11 +1,11 @@
 using System;
 
-namespace Chip8
+namespace Chip8;
+
+public class Memory
 {
-	public class Memory
-	{
-		private readonly byte[] fontData =
-		{
+	private static readonly byte[] fontData =
+	[
 			  0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 			  0x20, 0x60, 0x20, 0x20, 0x70, // 1
 			  0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
@@ -22,16 +22,15 @@ namespace Chip8
 			  0xE0, 0x90, 0x90, 0x90, 0xE0, // D
 			  0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
 			  0xF0, 0x80, 0xF0, 0x80, 0x80  // F
-		};
+		];
 
-		public Memory()
-		{
-			Ram = new byte[4096];
+	public Memory()
+	{
+		Ram = new byte[4096];
 
-			// Copy font data to ram[0] for convenience
-			Array.Copy(fontData, Ram, fontData.Length);
-		}
-
-		public byte[] Ram { get; set; }
+		// Copy font data to ram[0] for convenience
+		Array.Copy(fontData, Ram, fontData.Length);
 	}
+
+	public byte[] Ram { get; set; }
 }

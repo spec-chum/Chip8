@@ -5,74 +5,76 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Chip8
+namespace Chip8;
+
+internal class Machine
 {
-	internal class Machine
+	private readonly Cpu cpu;
+	private readonly Memory ram;
+	private readonly Display display;
+	private readonly Audio audio;
+	private readonly bool[] KeysPressed;
+	private readonly string romName;
+
+	public Machine(string rom)
 	{
-		private readonly Cpu cpu;
-		private readonly Memory ram;
-		private readonly Display display;
-		private readonly Audio audio;
-		private readonly bool[] KeysPressed;
-		private readonly string romName;
+		KeysPressed = new bool[16];
+		ram = new Memory();
+		audio = new Audio();
+		display = new Display(ram);
+		cpu = new Cpu(display, ram, audio, KeysPressed);
 
-		public Machine(string rom)
+		romName = rom;
+	}
+	public void Run()
+	{
+		var window = new RenderWindow(new VideoMode(1280, 640), "CHIP-8", Styles.Default);
+		window.SetFramerateLimit(60);
+		window.SetVerticalSyncEnabled(false);
+
+		window.Closed += (s, e) => window.Close();
+
+		window.KeyPressed += OnKeyPressed;
+		window.KeyReleased += OnKeyReleased;
+
+		Texture texture = new(64, 32);
+		Sprite frameBuffer = new(texture);
+		frameBuffer.Scale = new Vector2f(20, 20);
+
+		using (var fs = File.Open(romName, FileMode.Open))
 		{
-			KeysPressed = new bool[16];
-			ram = new Memory();
-			audio = new Audio();
-			display = new Display(ram);
-			cpu = new Cpu(display, ram, audio, KeysPressed);
-
-			romName = rom;
-		}
-		public void Run()
-		{
-			var window = new RenderWindow(new VideoMode(1280, 640), "CHIP-8", Styles.Default);
-			window.SetFramerateLimit(60);
-			window.SetVerticalSyncEnabled(false);
-
-			window.Closed += (s, e) => window.Close();
-
-			window.KeyPressed += OnKeyPressed;
-			window.KeyReleased += OnKeyReleased;
-
-			var texture = new Texture(64, 32);
-			var frameBuffer = new Sprite(texture);
-			frameBuffer.Scale = new Vector2f(20, 20);
-
-			using (var fs = File.Open(romName, FileMode.Open))
-			{
-				fs.Read(ram.Ram, 0x200, (int)fs.Length);
-			}
-
-			var fpsClock = new Clock();
-			var pixels = MemoryMarshal.Cast<byte, uint>(display.Pixels.AsSpan());
-
-			while (window.IsOpen)
-			{
-				var fps = 1 / fpsClock.Restart().AsSeconds();
-
-				window.DispatchEvents();
-
-				Console.SetCursorPosition(0, 2);
-				Console.WriteLine("FPS: {0}", fps.ToString().PadRight(4));
-
-				cpu.CanDrawSprite = true;
-				for (int i = 0; i < 500 / 60; i++)
-				{
-					cpu.Decode();
-				}
-
-				display.UpdatePixels(pixels);
-				texture.Update(display.Pixels);
-				window.Draw(frameBuffer);
-
-				window.Display();
-			}
+			fs.Read(ram.Ram, 0x200, (int)fs.Length);
 		}
 
-		private static int GetKeyIndex(Keyboard.Key key) => key switch
+		Clock fpsClock = new();
+		var pixels = MemoryMarshal.Cast<byte, uint>(display.Pixels.AsSpan());
+
+		while (window.IsOpen)
+		{
+			float fps = 1 / fpsClock.Restart().AsSeconds();
+
+			window.DispatchEvents();
+
+			Console.SetCursorPosition(0, 2);
+			Console.WriteLine("FPS: {0}", fps.ToString().PadRight(4));
+
+			cpu.CanDrawSprite = true;
+			for (int i = 0; i < 500 / 60; i++)
+			{
+				cpu.Decode();
+			}
+
+			display.UpdatePixels(pixels);
+			texture.Update(display.Pixels);
+			window.Draw(frameBuffer);
+
+			window.Display();
+		}
+	}
+
+	private static int GetKeyIndex(Keyboard.Key key)
+	{
+		return key switch
 		{
 			Keyboard.Key.X => 0,
 			Keyboard.Key.Num1 => 1,
@@ -92,29 +94,29 @@ namespace Chip8
 			Keyboard.Key.V => 15,
 			_ => -1
 		};
+	}
 
-		private void OnKeyReleased(object sender, KeyEventArgs e)
+	private void OnKeyReleased(object sender, KeyEventArgs e)
+	{
+		int index = GetKeyIndex(e.Code);
+		if (index != -1)
 		{
-			int index = GetKeyIndex(e.Code);
-			if (index != -1)
-			{
-				KeysPressed[index] = false;
-			}
+			KeysPressed[index] = false;
+		}
+	}
+
+	private void OnKeyPressed(object sender, KeyEventArgs e)
+	{
+		if (e.Code == Keyboard.Key.Escape)
+		{
+			(sender as Window).Close();
+			return;
 		}
 
-		private void OnKeyPressed(object sender, KeyEventArgs e)
+		int index = GetKeyIndex(e.Code);
+		if (index != -1)
 		{
-			if (e.Code == Keyboard.Key.Escape)
-			{
-				(sender as Window).Close();
-				return;
-			}
-
-			int index = GetKeyIndex(e.Code);
-			if (index != -1)
-			{
-				KeysPressed[index] = true;
-			}			
+			KeysPressed[index] = true;
 		}
 	}
 }

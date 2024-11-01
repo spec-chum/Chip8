@@ -137,6 +137,7 @@ public class Cpu
 				break;
 
 			case 0x8:     // Maths ops
+				byte flag;
 				int result;
 
 				switch (data & 0xf)
@@ -169,8 +170,9 @@ public class Cpu
 
 					case 0x5:     // SBC Vx, Vy
 						// If Vx is more or equal Vy, we can't overflow, so set carry flag, otherwise clear it
+						flag = (byte)(v[x] >= v[y] ? 1 : 0);
 						v[x] -= v[y];
-						v[0xf] = (byte)(v[x] >= v[y] ? 1 : 0);
+						v[0xf] = flag;
 						break;
 
 					case 0x6:    // SHR Vx
@@ -181,10 +183,11 @@ public class Cpu
 						break;
 
 					case 0x7:   // SUBN Vx, Vy
-						// If Vy is more or equal Vx, we can't overflow, so set carry flag, otherwise clear it
-						v[x] = (byte)(v[y] - v[x]);
-						v[0xf] = (byte)(v[y] >= v[x] ? 1 : 0);
-						break;
+                        // If Vy is more or equal Vx, we can't overflow, so set carry flag, otherwise clear it
+                        flag = (byte)(v[y] >= v[x] ? 1 : 0);
+                        v[x] = (byte)(v[y] - v[x]);
+                        v[0xf] = flag;
+                        break;
 
 					case 0xe:    // SHL Vx
 						//v[x] = v[y];

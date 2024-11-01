@@ -15,11 +15,11 @@ public class Cpu
 	private readonly bool[] keysPressed;
 
 	// Registers
-	private readonly byte[] v;              // registers V0 to V15
-	private byte dt;                        // Delay timer
-	private byte st;                        // Sound Timer
-	private ushort i;                       // Address register
-	private ushort pc;                      // Program Counter
+	private readonly byte[] v;  // registers V0 to V15
+	private byte dt;            // Delay timer
+	private byte st;            // Sound Timer
+	private ushort i;           // Address register
+	private ushort pc;          // Program Counter
 
 	private bool halted;
 
@@ -71,6 +71,7 @@ public class Cpu
 		// Helpers for when using Vx and Vy to make them easier to read
 		byte x = (byte)param;
 		byte y = (byte)((data >> 4) & 0xf);
+
 		Console.SetCursorPosition(0, 0);
 		Console.WriteLine("PC = {0:X4}", pc);
 
@@ -230,7 +231,7 @@ public class Cpu
 				{
 					case 0x9e:  // SKP Vx
 						// Skip next instruction if key pressed
-						if (keysPressed[v[x]])
+						if (keysPressed[v[x] & 0x0f])
 						{
 							pc += 2;
 						}
@@ -238,7 +239,7 @@ public class Cpu
 
 					case 0xa1:  // SKNP Vx
 						// Skip next instruction if key not pressed
-						if (!keysPressed[v[x]])
+						if (!keysPressed[v[x] & 0x0f])
 						{
 							pc += 2;
 						}
@@ -285,19 +286,19 @@ public class Cpu
 						break;
 
 					case 0x29:  // LD F, Vx
-						i = (ushort)(v[x] * 5);
+						i = (ushort)((v[x] & 0xF) * 5);
 						break;
 
 					case 0x33:  // LD B, Vx
-						ram.Ram[i + 0] = (byte)(v[x] / 100);
-						ram.Ram[i + 1] = (byte)(v[x] / 10 % 10);
-						ram.Ram[i + 2] = (byte)(v[x] % 10);
+						ram.Ram[(i + 0) & 0xfff] = (byte)(v[x] / 100);
+						ram.Ram[(i + 1) & 0xfff] = (byte)(v[x] / 10 % 10);
+						ram.Ram[(i + 2) & 0xfff] = (byte)(v[x] % 10);
 						break;
 
 					case 0x55:  // LD [I], Vx
 						for (int reg = 0; reg <= x; reg++)
 						{
-							ram.Ram[i + reg] = v[reg];
+							ram.Ram[(i + reg) & 0xfff] = v[reg];
 						}
 						i++;
 						break;
@@ -305,7 +306,7 @@ public class Cpu
 					case 0x65:  // LD Vx, [I]
 						for (int reg = 0; reg <= x; reg++)
 						{
-							v[reg] = ram.Ram[i + reg];
+							v[reg] = ram.Ram[(i + reg) & 0xfff];
 						}
 						i++;
 						break;
